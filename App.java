@@ -141,6 +141,7 @@ public class App extends Application {
             int y = -squareWidth*boardSize;
             int counter = 0;
             Rectangle[][][][][] squareContainer = new Rectangle[5][5][5][5][5];
+            Tile[][][][][] tileArray = new Tile[5][5][5][5][5];
             for (int i = 0; i<boardSize; i++){
                 for (int j = 0; j<boardSize; j++){
                     y += squareWidth*boardSize*1.05;
@@ -150,6 +151,7 @@ public class App extends Application {
                             y+=squareWidth;
                             for (int m = 0; m<boardSize; m++){
                                 x+=squareWidth;
+                                tileArray[i][j][k][l][m] = new Tile(0, squareContainer[i][j][k][l][m]);
                                 squareContainer[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
                                 squareContainer[i][j][k][l][m].setFill(Color.WHITE);
                                 squareContainer[i][j][k][l][m].setStroke(Color.BLACK);
@@ -175,6 +177,7 @@ public class App extends Application {
             while (!onward){
                 System.out.println("try");
                 onward = true;
+                System.out.println(bombCount);
                 for (int i = 0; i<bombCount; i++){
                     bomb1[i] = boardSize-1;
                     bomb2[i] = random.nextInt(boardSize);
@@ -198,54 +201,46 @@ public class App extends Application {
                     }
                 }
             }
-            Tile[] bombArray = new Tile[bombCount];
-            Tile[][][][][] tileArray = new Tile[5][5][5][5][5];
             for (int i = 0; i<boardSize; i++){
                 for (int j = 0; j<boardSize; j++){
                     for (int k = 0; k<boardSize; k++){
                         for (int l = 0; l<boardSize; l++){
                             for (int m = 0; m<boardSize; m++){
-                                tileArray[i][j][k][l][m] = new Tile(0, squareContainer[i][j][k][l][m]);
                                 for (int n = 0; n<bombCount; n++){
                                     if ((squareContainer[i][j][k][l][m] == squareContainer[bomb1[n]][bomb2[n]][bomb3[n]][bomb4[n]][bomb5[n]])){
+                                        System.out.println(i+","+j+","+k+","+l+","+m);
                                         squareContainer[i][j][k][l][m].setFill(Color.BLACK);
                                         counter = 0;
+                                        for (int o = -1; o<2; o++){
+                                            if (i+o >-1 && i+o<boardSize){
+                                                tileArray[i+o][j][k][l][m].addBomb();
+                                                for (int p = -1; p<2; p++){
+                                                    if (j+p >-1 && j+p<boardSize){
+                                                        tileArray[i+o][j+p][k][l][m].addBomb();
+                                                        for (int q = -1; q<2; q++){
+                                                            if (k+q >-1 && k+q<boardSize){
+                                                                tileArray[i+o][j+p][k+q][l][m].addBomb();
+                                                                for (int r = -1; r<2; r++){
+                                                                    if (l+r >-1 && l+r<boardSize){
+                                                                        tileArray[i+o][j+p][k+q][l+r][m].addBomb();
+                                                                        for (int s = -1; s<2; s++){
+                                                                            if (m+s >-1 && m+s<boardSize){
+                                                                                tileArray[i+o][j+p][k+q][l+r][m+s].addBomb();
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                         tileArray[i][j][k][l][m].isBomb();
-                                        tileArray[i-1][j][k][l][m].addBomb();
-                                            tileArray[i-1][j-1][k][l][m].addBomb();
-                                                tileArray[i-1][j-1][k-1][l][m].addBomb();
-                                                    tileArray[i-1][j-1][k-1][l-1][m].addBomb();
-                                                        tileArray[i-1][j-1][k-1][l-1][m-1].addBomb();
-                                                    tileArray[i-1][j-1][k-1][l][m-1].addBomb();
-                                                tileArray[i-1][j-1][k][l-1][m].addBomb();
-                                                    tileArray[i-1][j-1][k][l-1][m-1].addBomb();
-                                                tileArray[i-1][j-1][k][l][m-1].addBomb();
-                                            tileArray[i-1][j][k-1][l][m].addBomb();
-                                                tileArray[i-1][j][k-1][l-1][m].addBomb();
-                                                    tileArray[i-1][j][k-1][l-1][m-1].addBomb();
-                                                tileArray[i-1][j][k-1][l][m-1].addBomb();
-                                            tileArray[i-1][j][k][l-1][m].addBomb();
-                                                tileArray[i-1][j][k][l-1][m-1].addBomb();
-                                            tileArray[i-1][j][k][l][m-1].addBomb();
-                                        tileArray[i][j-1][k][l][m].addBomb();
-                                            tileArray[i][j-1][k-1][l][m].addBomb();
-                                                tileArray[i][j-1][k-1][l-1][m].addBomb();
-                                                    tileArray[i][j-1][k-1][l-1][m-1].addBomb();
-                                                tileArray[i][j-1][k-1][l][m-1].addBomb();
-                                            tileArray[i][j-1][k][l-1][m].addBomb();
-                                                tileArray[i][j-1][k][l-1][m-1].addBomb();
-                                            tileArray[i][j-1][k][l][m-1].addBomb();
-                                        tileArray[i][j][k-1][l][m].addBomb();
-                                            tileArray[i][j][k-1][l-1][m].addBomb();
-                                                tileArray[i][j][k-1][l-1][m-1].addBomb();
-                                            tileArray[i][j][k-1][l][m-1].addBomb();
-                                        tileArray[i][j][k][l-1][m].addBomb();
-                                            tileArray[i][j][k][l-1][m-1].addBomb();
-                                        tileArray[i][j][k][l][m-1].addBomb();
-                                        
-                                        
-                                        
                                     }
+                                if (tileArray[i][j][k][l][m].getBombs() > 0){
+                                    squareContainer[i][j][k][l][m].setFill(Color.RED);
+                                }
                                 }
                             }
                         }
