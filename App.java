@@ -4,6 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
@@ -132,14 +133,80 @@ public class App extends Application {
 //THE GAME
             bombCount = bye;
             boardSize = hi;
-            Pane gameRoot = new Pane();
+            Pane[] gameRoot = new Pane[5];
+            for (int i = 0; i < 5; i++){
+                gameRoot[i] = new Pane();
+            }
             int squareWidth = 20;
-            gameStage.setScene(new Scene(gameRoot, squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+            gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
             gameStage.setX(600);
             gameStage.setY(250);
             int x = -squareWidth*boardSize;
             int y = -squareWidth*boardSize;
             int counter = 0;
+            if (boardSize > 1){
+                gameRoot[0].setOnKeyPressed(f->{
+                    System.out.println(f.getCode());
+                    if (f.getCode() == KeyCode.UP){
+                        System.out.println("Hi!");
+                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }    
+                });
+            }
+            if (boardSize > 2){
+                gameRoot[1].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (f.getCode() == KeyCode.UP){
+                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    } 
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }else{
+                gameRoot[1].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }
+            if (boardSize > 3){
+                gameRoot[2].setOnKeyPressed(f->{
+                    System.out.println(f.getCode());
+                    if (f.getCode() == KeyCode.UP){
+                        gameStage.setScene(new Scene(gameRoot[3], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    } 
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }else{
+                gameRoot[2].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }
+            if (boardSize > 4){
+                gameRoot[3].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (f.getCode() == KeyCode.UP){
+                        gameStage.setScene(new Scene(gameRoot[4], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    } 
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }else{
+                gameRoot[3].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (f.getCode() == KeyCode.DOWN){
+                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    }   
+                });
+            }
             Rectangle[][][][][] squareContainer = new Rectangle[5][5][5][5][5];
             Tile[][][][][] tileArray = new Tile[5][5][5][5][5];
             for (int i = 0; i<boardSize; i++){
@@ -155,9 +222,12 @@ public class App extends Application {
                                 squareContainer[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
                                 squareContainer[i][j][k][l][m].setFill(Color.WHITE);
                                 squareContainer[i][j][k][l][m].setStroke(Color.BLACK);
-                                gameRoot.getChildren().add(squareContainer[i][j][k][l][m]);
+                                gameRoot[i].getChildren().add(squareContainer[i][j][k][l][m]);
+                                gameRoot[i].getChildren().add(tileArray[i][j][k][l][m].getNumberLabel());
+                                tileArray[i][j][k][l][m].getNumberLabel().setLayoutX(squareContainer[i][j][k][l][m].getX() + squareWidth / 4+1);
+                                tileArray[i][j][k][l][m].getNumberLabel().setLayoutY(squareContainer[i][j][k][l][m].getY() + squareWidth / 4-3);
                                 counter ++;
-                                System.out.println(counter);
+                                //System.out.println(counter);
                             }
                             x-=squareWidth*boardSize;
                         }
@@ -211,36 +281,50 @@ public class App extends Application {
                                         System.out.println(i+","+j+","+k+","+l+","+m);
                                         squareContainer[i][j][k][l][m].setFill(Color.BLACK);
                                         counter = 0;
-                                        for (int o = -1; o<2; o++){
-                                            if (i+o >-1 && i+o<boardSize){
-                                                tileArray[i+o][j][k][l][m].addBomb();
-                                                for (int p = -1; p<2; p++){
-                                                    if (j+p >-1 && j+p<boardSize){
-                                                        tileArray[i+o][j+p][k][l][m].addBomb();
-                                                        for (int q = -1; q<2; q++){
-                                                            if (k+q >-1 && k+q<boardSize){
-                                                                tileArray[i+o][j+p][k+q][l][m].addBomb();
-                                                                for (int r = -1; r<2; r++){
-                                                                    if (l+r >-1 && l+r<boardSize){
-                                                                        tileArray[i+o][j+p][k+q][l+r][m].addBomb();
-                                                                        for (int s = -1; s<2; s++){
-                                                                            if (m+s >-1 && m+s<boardSize){
-                                                                                tileArray[i+o][j+p][k+q][l+r][m+s].addBomb();
-                                                                            }
-                                                                        }
-                                                                    }
+                                        for (int o = -1; o <= 1; o++) {
+                                            for (int p = -1; p <= 1; p++) {
+                                                for (int q = -1; q <= 1; q++) {
+                                                    for (int r = -1; r <= 1; r++) {
+                                                        for (int s = -1; s <= 1; s++) {
+                                                            int ni = i + o;
+                                                            int nj = j + p;
+                                                            int nk = k + q;
+                                                            int nl = l + r;
+                                                            int nm = m + s;
+                                                            if (ni >= 0 && ni < boardSize &&
+                                                                nj >= 0 && nj < boardSize &&
+                                                                nk >= 0 && nk < boardSize &&
+                                                                nl >= 0 && nl < boardSize &&
+                                                                nm >= 0 && nm < boardSize) {
+                                                                
+                                                                // Don't update the bomb tile itself
+                                                                if (!(o == 0 && p == 0 && q == 0 && r == 0 && s == 0)) {
+                                                                    tileArray[ni][nj][nk][nl][nm].addBomb();
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
-                                        }
+                                        }                                        
                                         tileArray[i][j][k][l][m].isBomb();
                                     }
-                                if (tileArray[i][j][k][l][m].getBombs() > 0){
-                                    squareContainer[i][j][k][l][m].setFill(Color.RED);
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i<boardSize; i++){
+                for (int j = 0; j<boardSize; j++){
+                    for (int k = 0; k<boardSize; k++){
+                        for (int l = 0; l<boardSize; l++){
+                            for (int m = 0; m<boardSize; m++){
+                                for (int n = 0; n<bombCount; n++){
+                                    if (tileArray[i][j][k][l][m].getBombs() >= 1) {
+                                        tileArray[i][j][k][l][m].setNumber(tileArray[i][j][k][l][m].getBombs());
+                                        tileArray[i][j][k][l][m].showNumber(); // Display the number on the tile
+                                    }
                                 }
                             }
                         }
@@ -251,23 +335,45 @@ public class App extends Application {
             
     }
 }
-class Tile{
-    int bombs = -2;
+class Tile {
+    int bombs = -2; // -2 for uninitialized, -1 for a bomb, >= 0 for adjacent bomb count
     Rectangle square;
-    Tile(int bombs, Rectangle square){
+    Label numberLabel;  // This will display the number of adjacent bombs
+
+    Tile(int bombs, Rectangle square) {
         this.bombs = bombs;
         this.square = square;
+        this.numberLabel = new Label(""); // Initialize with no label
+        this.numberLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: black;"); // Style the number
     }
-    public int getBombs(){
+
+    public int getBombs() {
         return this.bombs;
     }
-    public Rectangle getSquare(){
+
+    public Rectangle getSquare() {
         return this.square;
     }
-    public void addBomb(){
-        this.bombs ++;
+
+    public void addBomb() {
+        this.bombs++;
     }
-    public void isBomb(){
-        this.bombs = -1;
+
+    public void isBomb() {
+        this.bombs = -1; // Mark this tile as a bomb
+    }
+
+    public void setNumber(int number) {
+        this.bombs = number; // Set the bomb count for adjacent bombs
+    }
+
+    public void showNumber() {
+        if (bombs >= 0) {
+            numberLabel.setText(String.valueOf(bombs));
+        }
+    }
+
+    public Label getNumberLabel() {
+        return this.numberLabel;
     }
 }
