@@ -10,6 +10,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.stage.*;
 import java.util.Random;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
+
  
 public class App extends Application {
     public static void main(String[] args) {
@@ -17,6 +20,7 @@ public class App extends Application {
     }
     int bombCount = 0;
     int boardSize = 0;
+    boolean canSwitch = true;
     @Override
     public void start(Stage primaryStage) {
 ///STAGE EARLY SETUP
@@ -113,7 +117,7 @@ public class App extends Application {
         rulesTA.setWrapText(true);
         rulesTA.setEditable(false);
         rulesTA.setText("Dummy Text");
-        rulesTA.setPrefHeight(700);
+        rulesTA.setPrefHeight(300);
         rulesTA.setPrefWidth(330);
         ScrollPane rulesRoot = new ScrollPane(rulesTA);
         rules.setScene(new Scene(rulesRoot, 350,350));    
@@ -133,12 +137,16 @@ public class App extends Application {
 //THE GAME
             bombCount = bye;
             boardSize = hi;
+            int squareWidth = 20;
             Pane[] gameRoot = new Pane[5];
+            Scene[] gameScene = new Scene[5];
             for (int i = 0; i < 5; i++){
                 gameRoot[i] = new Pane();
+                gameRoot[i].getChildren().add(new Label((i+1)+""));
+                gameScene[i] = new Scene(gameRoot[i], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23);
             }
-            int squareWidth = 20;
-            gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+            gameStage.setScene(gameScene[0]);
+            gameRoot[0].requestFocus();
             gameStage.setX(600);
             gameStage.setY(250);
             int x = -squareWidth*boardSize;
@@ -146,69 +154,140 @@ public class App extends Application {
             int counter = 0;
             if (boardSize > 1){
                 gameRoot[0].setOnKeyPressed(f->{
-                    System.out.println(f.getCode());
-                    if (f.getCode() == KeyCode.UP){
-                        System.out.println("Hi!");
-                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.UP){
+                        System.out.println(1);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[1]);
+                        gameRoot[1].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }    
                 });
             }
             if (boardSize > 2){
                 gameRoot[1].setOnKeyPressed(f->{
                     f.getCode();
-                    if (f.getCode() == KeyCode.UP){
-                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.UP){
+                        System.out.println(2);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[2]);
+                        gameRoot[2].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     } 
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(0);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[0]);
+                        gameRoot[0].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }else{
                 gameRoot[1].setOnKeyPressed(f->{
                     f.getCode();
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[0], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(0);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[0]);
+                        gameRoot[0].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }
             if (boardSize > 3){
                 gameRoot[2].setOnKeyPressed(f->{
                     System.out.println(f.getCode());
-                    if (f.getCode() == KeyCode.UP){
-                        gameStage.setScene(new Scene(gameRoot[3], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if ( canSwitch && f.getCode() == KeyCode.UP){
+                        System.out.println(3);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[3]);
+                        gameRoot[3].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     } 
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(1);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[1]);
+                        gameRoot[1].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }else{
                 gameRoot[2].setOnKeyPressed(f->{
                     f.getCode();
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[1], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(1);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[1]);
+                        gameRoot[1].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }
             if (boardSize > 4){
                 gameRoot[3].setOnKeyPressed(f->{
                     f.getCode();
-                    if (f.getCode() == KeyCode.UP){
-                        gameStage.setScene(new Scene(gameRoot[4], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.UP){
+                        System.out.println(4);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[4]);
+                        gameRoot[4].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     } 
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(2);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[2]);
+                        gameRoot[2].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
+                    }   
+                });
+                gameRoot[4].setOnKeyPressed(f->{
+                    f.getCode();
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(3);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[3]);
+                        gameRoot[3].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }else{
                 gameRoot[3].setOnKeyPressed(f->{
                     f.getCode();
-                    if (f.getCode() == KeyCode.DOWN){
-                        gameStage.setScene(new Scene(gameRoot[2], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23));
+                    if (canSwitch && f.getCode() == KeyCode.DOWN){
+                        System.out.println(2);
+                        canSwitch = false;
+                        gameStage.setScene(gameScene[2]);
+                        gameRoot[2].requestFocus();
+                        PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
+                        cooldown.setOnFinished(ev -> canSwitch = true);
+                        cooldown.play();
                     }   
                 });
             }
             Rectangle[][][][][] squareContainer = new Rectangle[5][5][5][5][5];
             Tile[][][][][] tileArray = new Tile[5][5][5][5][5];
+            Rectangle[][][][][] coverBox = new Rectangle[5][5][5][5][5];
             for (int i = 0; i<boardSize; i++){
                 for (int j = 0; j<boardSize; j++){
                     y += squareWidth*boardSize*1.05;
@@ -220,12 +299,18 @@ public class App extends Application {
                                 x+=squareWidth;
                                 tileArray[i][j][k][l][m] = new Tile(0, squareContainer[i][j][k][l][m]);
                                 squareContainer[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
+                                coverBox[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
+                                coverBox[i][j][k][l][m].setFill(Color.GRAY);
+                                coverBox[i][j][k][l][m].setOnMouseClicked(f->{
+                                    ((Rectangle)f.getSource()).setFill(Color.TRANSPARENT);
+                                });
                                 squareContainer[i][j][k][l][m].setFill(Color.WHITE);
                                 squareContainer[i][j][k][l][m].setStroke(Color.BLACK);
                                 gameRoot[i].getChildren().add(squareContainer[i][j][k][l][m]);
                                 gameRoot[i].getChildren().add(tileArray[i][j][k][l][m].getNumberLabel());
                                 tileArray[i][j][k][l][m].getNumberLabel().setLayoutX(squareContainer[i][j][k][l][m].getX() + squareWidth / 4+1);
                                 tileArray[i][j][k][l][m].getNumberLabel().setLayoutY(squareContainer[i][j][k][l][m].getY() + squareWidth / 4-3);
+                                gameRoot[i].getChildren().add(coverBox[i][j][k][l][m]);
                                 counter ++;
                                 //System.out.println(counter);
                             }
@@ -249,7 +334,7 @@ public class App extends Application {
                 onward = true;
                 System.out.println(bombCount);
                 for (int i = 0; i<bombCount; i++){
-                    bomb1[i] = boardSize-1;
+                    bomb1[i] = random.nextInt(boardSize);
                     bomb2[i] = random.nextInt(boardSize);
                     bomb3[i] = random.nextInt(boardSize);
                     bomb4[i] = random.nextInt(boardSize);
