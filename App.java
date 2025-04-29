@@ -5,6 +5,7 @@ import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
@@ -12,6 +13,7 @@ import javafx.stage.*;
 import java.util.Random;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import java.util.HashSet;
 
  
 public class App extends Application {
@@ -297,13 +299,10 @@ public class App extends Application {
                             y+=squareWidth;
                             for (int m = 0; m<boardSize; m++){
                                 x+=squareWidth;
-                                tileArray[i][j][k][l][m] = new Tile(0, squareContainer[i][j][k][l][m]);
                                 squareContainer[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
                                 coverBox[i][j][k][l][m] = new Rectangle(x,y,squareWidth,squareWidth);
+                                tileArray[i][j][k][l][m] = new Tile(0, squareContainer[i][j][k][l][m], coverBox[i][j][k][l][m]);
                                 coverBox[i][j][k][l][m].setFill(Color.GRAY);
-                                coverBox[i][j][k][l][m].setOnMouseClicked(f->{
-                                    ((Rectangle)f.getSource()).setFill(Color.TRANSPARENT);
-                                });
                                 squareContainer[i][j][k][l][m].setFill(Color.WHITE);
                                 squareContainer[i][j][k][l][m].setStroke(Color.BLACK);
                                 gameRoot[i].getChildren().add(squareContainer[i][j][k][l][m]);
@@ -312,7 +311,6 @@ public class App extends Application {
                                 tileArray[i][j][k][l][m].getNumberLabel().setLayoutY(squareContainer[i][j][k][l][m].getY() + squareWidth / 4-3);
                                 gameRoot[i].getChildren().add(coverBox[i][j][k][l][m]);
                                 counter ++;
-                                //System.out.println(counter);
                             }
                             x-=squareWidth*boardSize;
                         }
@@ -400,34 +398,241 @@ public class App extends Application {
                     }
                 }
             }
+            
+            // This will track visited tiles during flood fill to prevent infinite loops
+            HashSet<String> cleared = new HashSet<>();
+            
             for (int i = 0; i<boardSize; i++){
                 for (int j = 0; j<boardSize; j++){
                     for (int k = 0; k<boardSize; k++){
                         for (int l = 0; l<boardSize; l++){
                             for (int m = 0; m<boardSize; m++){
-                                for (int n = 0; n<bombCount; n++){
-                                    if (tileArray[i][j][k][l][m].getBombs() >= 1) {
-                                        tileArray[i][j][k][l][m].setNumber(tileArray[i][j][k][l][m].getBombs());
-                                        tileArray[i][j][k][l][m].showNumber(); // Display the number on the tile
+                                // Store the coordinates for use in the lambda
+                                final int fi = i;
+                                final int fj = j;
+                                final int fk = k;
+                                final int fl = l;
+                                final int fm = m;
+                                
+                                tileArray[i][j][k][l][m].getCoverBox().setOnMouseClicked(f->{
+                                    if (f.getButton() == MouseButton.PRIMARY){
+                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY){
+                                            ((Rectangle)f.getSource()).setFill(Color.TRANSPARENT);
+                                            
+                                            // Clear HashSet for new flood fill operation
+                                            cleared.clear();
+                                            
+                                            // Check if we hit a bomb
+                                            for (int ia = 0; ia<boardSize; ia++){
+                                                for (int ja = 0; ja<boardSize; ja++){
+                                                    for (int ka = 0; ka<boardSize; ka++){
+                                                        for (int la = 0; la<boardSize; la++){
+                                                            for (int ma = 0; ma<boardSize; ma++){
+                                                                if (((Rectangle)tileArray[ia][ja][ka][la][ma].getSquare()).getFill() == Color.BLACK && 
+                                                                    ((Rectangle)tileArray[ia][ja][ka][la][ma].getCoverBox()).getFill() == Color.TRANSPARENT){
+                                                                    Stage winStage = new Stage();
+                                                                    winStage.initStyle(StageStyle.UNDECORATED);
+                                                                    
+                                                                    VBox winRoot = new VBox(10);
+                                                                    winRoot.setAlignment(Pos.CENTER);
+                                                                    
+                                                                    Label winMessage = new Label("You Lose!");
+                                                                    winMessage.setStyle("-fx-font-size: 20px;");
+                                                                    
+                                                                    Button closeButton = new Button("Return to Menu");
+                                                                    closeButton.setOnAction(g -> {
+                                                                        winStage.close();
+                                                                        gameStage.close();
+                                                                        primaryStage.show();
+                                                                    });
+                                                                    
+                                                                    winRoot.getChildren().addAll(winMessage, closeButton);
+                                                                    winRoot.setStyle("-fx-padding: 20px;");
+                                                                    
+                                                                    Scene winScene = new Scene(winRoot, 300, 150);
+                                                                    winStage.setScene(winScene);
+                                                                    winStage.show();
+                                                                    primaryStage.show();
+                                                                    return;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Check for win condition
+                                            checkWinCondition(tileArray, boardSize, bombCount, gameStage, primaryStage);
+                                            
+                                            // If we clicked on a tile with 0 bombs, start flood fill
+                                            if (tileArray[fi][fj][fk][fl][fm].getBombs() == 0) {
+                                                floodFill(tileArray, fi, fj, fk, fl, fm, boardSize, cleared);
+                                            }
+                                        }
+                                    } else {
+                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY){
+                                            ((Rectangle)f.getSource()).setFill(Color.ORANGE);
+                                        }
+                                        else if (((Rectangle)f.getSource()).getFill() == Color.ORANGE){
+                                            ((Rectangle)f.getSource()).setFill(Color.GRAY);
+                                        }
+                                        // Check for win condition after flagging a tile
+                                        checkWinCondition(tileArray, boardSize, bombCount, gameStage, primaryStage);
                                     }
+                                });
+                                
+                                // Display numbers
+                                if (tileArray[i][j][k][l][m].getBombs() >= 1) {
+                                    tileArray[i][j][k][l][m].setNumber(tileArray[i][j][k][l][m].getBombs());
+                                    tileArray[i][j][k][l][m].showNumber(); // Display the number on the tile
                                 }
                             }
                         }
                     }
                 }
             }
+        });
+    }
+    
+    // Check if the player has won
+    private void checkWinCondition(Tile[][][][][] tileArray, int boardSize, int bombCount, Stage gameStage, Stage primaryStage) {
+        boolean allNonBombsRevealed = true;
+        boolean allBombsFlagged = true;
+        int flaggedBombs = 0;
+        
+        // Count how many non-bomb tiles are still covered and how many bombs are correctly flagged
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                for (int k = 0; k < boardSize; k++) {
+                    for (int l = 0; l < boardSize; l++) {
+                        for (int m = 0; m < boardSize; m++) {
+                            Rectangle coverBox = tileArray[i][j][k][l][m].getCoverBox();
+                            boolean isBomb = tileArray[i][j][k][l][m].getBombs() == -1;
+                            boolean isCovered = coverBox.getFill() == Color.GRAY;
+                            boolean isFlagged = coverBox.getFill() == Color.ORANGE;
+                            
+                            // If a non-bomb tile is still covered, player hasn't won yet
+                            if (!isBomb && isCovered) {
+                                allNonBombsRevealed = false;
+                            }
+                            
+                            // Count bombs and correctly flagged bombs
+                            if (isBomb) {
+                                if (isFlagged) {
+                                    flaggedBombs++;
+                                } else {
+                                    allBombsFlagged = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Win if all non-bomb tiles are revealed OR all bombs are correctly flagged
+        if (allNonBombsRevealed || (allBombsFlagged && flaggedBombs == bombCount && allNonBombsRevealed)) {
+            // Show win message
+            Stage winStage = new Stage();
+            winStage.initStyle(StageStyle.UNDECORATED);
+            
+            VBox winRoot = new VBox(10);
+            winRoot.setAlignment(Pos.CENTER);
+            
+            Label winMessage = new Label("Congratulations! You Win!");
+            winMessage.setStyle("-fx-font-size: 20px;");
+            
+            Button closeButton = new Button("Return to Menu");
+            closeButton.setOnAction(e -> {
+                winStage.close();
+                gameStage.close();
+                primaryStage.show();
             });
             
+            winRoot.getChildren().addAll(winMessage, closeButton);
+            winRoot.setStyle("-fx-padding: 20px;");
+            
+            Scene winScene = new Scene(winRoot, 300, 150);
+            winStage.setScene(winScene);
+            winStage.show();
+        }
+    }
+    
+    // Recursive flood fill function to clear empty spaces
+    private void floodFill(Tile[][][][][] tileArray, int i, int j, int k, int l, int m, int boardSize, HashSet<String> cleared) {
+        // Create a key for this position
+        String key = i + "," + j + "," + k + "," + l + "," + m;
+        
+        // Check if we've already processed this position
+        if (cleared.contains(key)) {
+            return;
+        }
+        
+        // Mark this position as cleared
+        cleared.add(key);
+        
+        // Make sure we're within bounds
+        if (i < 0 || i >= boardSize || j < 0 || j >= boardSize || k < 0 || k >= boardSize ||
+            l < 0 || l >= boardSize || m < 0 || m >= boardSize) {
+            return;
+        }
+        
+        // Reveal this tile
+        tileArray[i][j][k][l][m].getCoverBox().setFill(Color.TRANSPARENT);
+        
+        // If this tile has bombs around it, don't continue flood fill from here
+        if (tileArray[i][j][k][l][m].getBombs() > 0) {
+            return;
+        }
+        
+        // If this tile is a bomb, don't continue flood fill (shouldn't happen because of game over)
+        if (tileArray[i][j][k][l][m].getBombs() == -1) {
+            return;
+        }
+        
+        // Recursively flood fill all adjacent tiles (including diagonals in 5D)
+        for (int o = -1; o <= 1; o++) {
+            for (int p = -1; p <= 1; p++) {
+                for (int q = -1; q <= 1; q++) {
+                    for (int r = -1; r <= 1; r++) {
+                        for (int s = -1; s <= 1; s++) {
+                            // Skip the current tile
+                            if (o == 0 && p == 0 && q == 0 && r == 0 && s == 0) {
+                                continue;
+                            }
+                            
+                            int ni = i + o;
+                            int nj = j + p;
+                            int nk = k + q;
+                            int nl = l + r;
+                            int nm = m + s;
+                            
+                            // Check if the neighboring tile is within bounds and not yet revealed
+                            if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && 
+                                nk >= 0 && nk < boardSize && nl >= 0 && nl < boardSize && 
+                                nm >= 0 && nm < boardSize && 
+                                tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY) {
+                                
+                                floodFill(tileArray, ni, nj, nk, nl, nm, boardSize, cleared);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+
 class Tile {
     int bombs = -2; // -2 for uninitialized, -1 for a bomb, >= 0 for adjacent bomb count
     Rectangle square;
     Label numberLabel;  // This will display the number of adjacent bombs
+    Rectangle coverBox;
 
-    Tile(int bombs, Rectangle square) {
+    Tile(int bombs, Rectangle square, Rectangle coverBox) {
         this.bombs = bombs;
         this.square = square;
+        this.coverBox = coverBox;
         this.numberLabel = new Label(""); // Initialize with no label
         this.numberLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: black;"); // Style the number
     }
@@ -438,6 +643,10 @@ class Tile {
 
     public Rectangle getSquare() {
         return this.square;
+    }
+    
+    public Rectangle getCoverBox(){
+        return this.coverBox;
     }
 
     public void addBomb() {
