@@ -1,14 +1,13 @@
 import javafx.application.*;
-import javafx.event.*;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.*;
 import java.util.Random;
 import javafx.animation.PauseTransition;
@@ -22,6 +21,7 @@ public class App extends Application {
     }
     int bombCount = 0;
     int boardSize = 0;
+    int flagged = 0;
     boolean canSwitch = true;
     @Override
     public void start(Stage primaryStage) {
@@ -88,15 +88,15 @@ public class App extends Application {
         difSetBox.setOnAction(e->{
             if (difSetBox.getValue() == "Easy"){
                 BSTF.setText("3");
-                BCTF.setText("1");
+                BCTF.setText("3");
             }else if (difSetBox.getValue() == "Medium"){
-                BSTF.setText("5");
-                BCTF.setText("5");
+                BSTF.setText("4");
+                BCTF.setText("10");
             }else if (difSetBox.getValue() == "Hard"){
-                BSTF.setText("7");
-                BCTF.setText("20");
+                BSTF.setText("5");
+                BCTF.setText("30");
             }else if (difSetBox.getValue() == "Impossible"){
-                BSTF.setText("10");
+                BSTF.setText("5");
                 BCTF.setText("50");
             }
         });
@@ -113,7 +113,8 @@ public class App extends Application {
             
             difSetBox.setValue("Custom");
         });
-        Label startButton = new Label("Start");
+        Label startButton = new Label("                                                  Start");
+        startButton.setTextAlignment(TextAlignment.RIGHT);
 //RULES
         TextArea rulesTA = new TextArea();
         rulesTA.setWrapText(true);
@@ -127,7 +128,7 @@ public class App extends Application {
         settingsCenter.add(new Label("Bomb Count:" ),0,2);
         settingsCenter.add(BSTF, 1,1);
         settingsCenter.add(BCTF,1,2);
-        settingsCenter.add(startButton, 0,3);
+        settingsCenter.add(startButton, 1,3);
         settingsRoot.setCenter(settingsCenter);    
         startButton.setOnMouseClicked(e->{
             int hi = Integer.parseInt(BSTF.getText());
@@ -142,22 +143,24 @@ public class App extends Application {
             int squareWidth = 20;
             Pane[] gameRoot = new Pane[5];
             Scene[] gameScene = new Scene[5];
+            
+            Label bombLabel[] = new Label[5];
             for (int i = 0; i < 5; i++){
                 gameRoot[i] = new Pane();
-                gameRoot[i].getChildren().add(new Label((i+1)+""));
-                gameScene[i] = new Scene(gameRoot[i], squareWidth*boardSize*boardSize*1.23,squareWidth*boardSize*boardSize*1.23);
+                gameRoot[i].getChildren().add(new Label("Level: "+(i+1)+""));
+                bombLabel[i] = new Label();
+                bombLabel[i].setLayoutX(50);
+                bombLabel[i].setText("Unflagged Bombs: " + (bombCount-flagged)+"/"+(bombCount));
+                gameRoot[i].getChildren().add(bombLabel[i]);
+                gameScene[i] = new Scene(gameRoot[i], 700,700);
             }
             gameStage.setScene(gameScene[0]);
             gameRoot[0].requestFocus();
-            gameStage.setX(600);
-            gameStage.setY(250);
             int x = -squareWidth*boardSize;
             int y = -squareWidth*boardSize;
-            int counter = 0;
             if (boardSize > 1){
                 gameRoot[0].setOnKeyPressed(f->{
                     if (canSwitch && f.getCode() == KeyCode.UP){
-                        System.out.println(1);
                         canSwitch = false;
                         gameStage.setScene(gameScene[1]);
                         gameRoot[1].requestFocus();
@@ -171,7 +174,6 @@ public class App extends Application {
                 gameRoot[1].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.UP){
-                        System.out.println(2);
                         canSwitch = false;
                         gameStage.setScene(gameScene[2]);
                         gameRoot[2].requestFocus();
@@ -180,7 +182,6 @@ public class App extends Application {
                         cooldown.play();
                     } 
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(0);
                         canSwitch = false;
                         gameStage.setScene(gameScene[0]);
                         gameRoot[0].requestFocus();
@@ -193,7 +194,6 @@ public class App extends Application {
                 gameRoot[1].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(0);
                         canSwitch = false;
                         gameStage.setScene(gameScene[0]);
                         gameRoot[0].requestFocus();
@@ -205,9 +205,7 @@ public class App extends Application {
             }
             if (boardSize > 3){
                 gameRoot[2].setOnKeyPressed(f->{
-                    System.out.println(f.getCode());
                     if ( canSwitch && f.getCode() == KeyCode.UP){
-                        System.out.println(3);
                         canSwitch = false;
                         gameStage.setScene(gameScene[3]);
                         gameRoot[3].requestFocus();
@@ -216,7 +214,6 @@ public class App extends Application {
                         cooldown.play();
                     } 
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(1);
                         canSwitch = false;
                         gameStage.setScene(gameScene[1]);
                         gameRoot[1].requestFocus();
@@ -229,7 +226,6 @@ public class App extends Application {
                 gameRoot[2].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(1);
                         canSwitch = false;
                         gameStage.setScene(gameScene[1]);
                         gameRoot[1].requestFocus();
@@ -243,7 +239,6 @@ public class App extends Application {
                 gameRoot[3].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.UP){
-                        System.out.println(4);
                         canSwitch = false;
                         gameStage.setScene(gameScene[4]);
                         gameRoot[4].requestFocus();
@@ -252,7 +247,6 @@ public class App extends Application {
                         cooldown.play();
                     } 
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(2);
                         canSwitch = false;
                         gameStage.setScene(gameScene[2]);
                         gameRoot[2].requestFocus();
@@ -264,7 +258,6 @@ public class App extends Application {
                 gameRoot[4].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(3);
                         canSwitch = false;
                         gameStage.setScene(gameScene[3]);
                         gameRoot[3].requestFocus();
@@ -277,7 +270,6 @@ public class App extends Application {
                 gameRoot[3].setOnKeyPressed(f->{
                     f.getCode();
                     if (canSwitch && f.getCode() == KeyCode.DOWN){
-                        System.out.println(2);
                         canSwitch = false;
                         gameStage.setScene(gameScene[2]);
                         gameRoot[2].requestFocus();
@@ -310,7 +302,6 @@ public class App extends Application {
                                 tileArray[i][j][k][l][m].getNumberLabel().setLayoutX(squareContainer[i][j][k][l][m].getX() + squareWidth / 4+1);
                                 tileArray[i][j][k][l][m].getNumberLabel().setLayoutY(squareContainer[i][j][k][l][m].getY() + squareWidth / 4-3);
                                 gameRoot[i].getChildren().add(coverBox[i][j][k][l][m]);
-                                counter ++;
                             }
                             x-=squareWidth*boardSize;
                         }
@@ -328,9 +319,7 @@ public class App extends Application {
             int[] bomb4 = new int[3124];
             int[] bomb5 = new int[3124];
             while (!onward){
-                System.out.println("try");
                 onward = true;
-                System.out.println(bombCount);
                 for (int i = 0; i<bombCount; i++){
                     bomb1[i] = random.nextInt(boardSize);
                     bomb2[i] = random.nextInt(boardSize);
@@ -361,9 +350,7 @@ public class App extends Application {
                             for (int m = 0; m<boardSize; m++){
                                 for (int n = 0; n<bombCount; n++){
                                     if ((squareContainer[i][j][k][l][m] == squareContainer[bomb1[n]][bomb2[n]][bomb3[n]][bomb4[n]][bomb5[n]])){
-                                        System.out.println(i+","+j+","+k+","+l+","+m);
                                         squareContainer[i][j][k][l][m].setFill(Color.BLACK);
-                                        counter = 0;
                                         for (int o = -1; o <= 1; o++) {
                                             for (int p = -1; p <= 1; p++) {
                                                 for (int q = -1; q <= 1; q++) {
@@ -442,6 +429,7 @@ public class App extends Application {
                                                                     Button closeButton = new Button("Return to Menu");
                                                                     closeButton.setOnAction(g -> {
                                                                         winStage.close();
+                                                                        flagged = 0;
                                                                         gameStage.close();
                                                                         primaryStage.show();
                                                                     });
@@ -452,7 +440,6 @@ public class App extends Application {
                                                                     Scene winScene = new Scene(winRoot, 300, 150);
                                                                     winStage.setScene(winScene);
                                                                     winStage.show();
-                                                                    primaryStage.show();
                                                                     return;
                                                                 }
                                                             }
@@ -472,9 +459,15 @@ public class App extends Application {
                                     } else {
                                         if (((Rectangle)f.getSource()).getFill() == Color.GRAY){
                                             ((Rectangle)f.getSource()).setFill(Color.ORANGE);
+                                            flagged++;
+                                            for (int in = 0; in<boardSize; in++)
+                                                bombLabel[in].setText("Unflagged Bombs: " + (bombCount-flagged)+"/"+(bombCount));
                                         }
                                         else if (((Rectangle)f.getSource()).getFill() == Color.ORANGE){
                                             ((Rectangle)f.getSource()).setFill(Color.GRAY);
+                                            flagged--;
+                                            for (int in = 0; in<boardSize; in++)
+                                                bombLabel[in].setText("Unflagged Bombs: " + (bombCount-flagged)+"/"+(bombCount));
                                         }
                                         // Check for win condition after flagging a tile
                                         checkWinCondition(tileArray, boardSize, bombCount, gameStage, primaryStage);
@@ -545,6 +538,7 @@ public class App extends Application {
             Button closeButton = new Button("Return to Menu");
             closeButton.setOnAction(e -> {
                 winStage.close();
+                flagged = 0;
                 gameStage.close();
                 primaryStage.show();
             });
