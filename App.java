@@ -2,6 +2,7 @@ import javafx.application.*;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
+import javafx.scene.effect.BlurType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
@@ -33,7 +34,7 @@ public class App extends Application {
         rules.setX(875);
         gameSettings.initStyle(StageStyle.UNDECORATED);
         primaryStage.initStyle(StageStyle.UNDECORATED);
-        /*gameStage.initStyle(StageStyle.UNDECORATED);*/
+        gameStage.initStyle(StageStyle.UNDECORATED);
 //MAIN MENU
         BorderPane root = new BorderPane();
         VBox centerPane = new VBox();
@@ -119,11 +120,13 @@ public class App extends Application {
         TextArea rulesTA = new TextArea();
         rulesTA.setWrapText(true);
         rulesTA.setEditable(false);
-        rulesTA.setText("Dummy Text");
+        rulesTA.setText("Rules:\nEach tile contains a number. That number displays how many bombs are adjacent to that square.\n\nAdjacent squares are:\n"+
+        "The surrounding tiles (including the corners)\nThe surrounding tiles and actual tile of the surrounding boxes (including corners)\nThe surrounding tiles of above layers and below layers, including those in adjacent boxes.\n\n"+
+        "In order to go to a different layer, press up and down on your keyboard. To mark a mine, right click. To clear a tile, left click.\n\nAll other rules are the same as normal minesweeper.");
         rulesTA.setPrefHeight(300);
         rulesTA.setPrefWidth(330);
         ScrollPane rulesRoot = new ScrollPane(rulesTA);
-        rules.setScene(new Scene(rulesRoot, 350,350));    
+        rules.setScene(new Scene(rulesRoot, 332,302));    
         settingsCenter.add(new Label("Board Size (All sides are equal): "),0,1);
         settingsCenter.add(new Label("Bomb Count:" ),0,2);
         settingsCenter.add(BSTF, 1,1);
@@ -145,6 +148,7 @@ public class App extends Application {
             Scene[] gameScene = new Scene[5];
             
             Label bombLabel[] = new Label[5];
+            Label exitLabel[] = new Label[5];
             for (int i = 0; i < 5; i++){
                 gameRoot[i] = new Pane();
                 gameRoot[i].getChildren().add(new Label("Level: "+(i+1)+""));
@@ -152,9 +156,18 @@ public class App extends Application {
                 bombLabel[i].setLayoutX(50);
                 bombLabel[i].setText("Unflagged Bombs: " + (bombCount-flagged)+"/"+(bombCount));
                 gameRoot[i].getChildren().add(bombLabel[i]);
-                gameScene[i] = new Scene(gameRoot[i], 700,700);
+                exitLabel[i] = new Label("Exit");
+                exitLabel[i].setLayoutX(boardSize*boardSize*squareWidth*1.3-25);
+                exitLabel[i].setOnMouseClicked(f->{
+                    gameStage.close();
+                    primaryStage.show();
+                });
+                gameRoot[i].getChildren().add(exitLabel[i]);
+                gameScene[i] = new Scene(gameRoot[i], boardSize*boardSize*squareWidth*1.3,boardSize*boardSize*squareWidth*1.3);
             }
             gameStage.setScene(gameScene[0]);
+            gameStage.setX(1366/2-((boardSize*boardSize*squareWidth*1.3)/2));
+            gameStage.setY(768/2-((boardSize*boardSize*squareWidth*1.3)/2)-50);
             gameRoot[0].requestFocus();
             int x = -squareWidth*boardSize;
             int y = -squareWidth*boardSize;
@@ -167,7 +180,7 @@ public class App extends Application {
                         PauseTransition cooldown = new PauseTransition(Duration.millis(300)); 
                         cooldown.setOnFinished(ev -> canSwitch = true);
                         cooldown.play();
-                    }    
+                    }   
                 });
             }
             if (boardSize > 2){
@@ -418,19 +431,18 @@ public class App extends Application {
                                                                 if (((Rectangle)tileArray[ia][ja][ka][la][ma].getSquare()).getFill() == Color.BLACK && 
                                                                     ((Rectangle)tileArray[ia][ja][ka][la][ma].getCoverBox()).getFill() == Color.TRANSPARENT){
                                                                     Stage winStage = new Stage();
-                                                                    winStage.initStyle(StageStyle.UNDECORATED);
+                                                                    
                                                                     
                                                                     VBox winRoot = new VBox(10);
                                                                     winRoot.setAlignment(Pos.CENTER);
-                                                                    
+                                                                    gameStage.close();
                                                                     Label winMessage = new Label("You Lose!");
                                                                     winMessage.setStyle("-fx-font-size: 20px;");
-                                                                    
+
                                                                     Button closeButton = new Button("Return to Menu");
                                                                     closeButton.setOnAction(g -> {
                                                                         winStage.close();
                                                                         flagged = 0;
-                                                                        gameStage.close();
                                                                         primaryStage.show();
                                                                     });
                                                                     
@@ -454,6 +466,65 @@ public class App extends Application {
                                             // If we clicked on a tile with 0 bombs, start flood fill
                                             if (tileArray[fi][fj][fk][fl][fm].getBombs() == 0) {
                                                 floodFill(tileArray, fi, fj, fk, fl, fm, boardSize, cleared);
+                                            }
+                                        }
+                                    }else if(f.getButton() == MouseButton.MIDDLE){
+                                        Rectangle center = ((Rectangle)f.getSource());
+                                        int centeri = -2;
+                                        int centerj = -2;
+                                        int centerk = -2;
+                                        int centerl = -2;
+                                        int centerm = -2;
+                                        for (int ia = 0; ia<boardSize; ia++){
+                                            for (int ja = 0; ja<boardSize; ja++){
+                                                for (int ka = 0; ka<boardSize; ka++){
+                                                    for (int la = 0; la<boardSize; la++){
+                                                        for (int ma = 0; ma<boardSize; ma++){
+                                                            if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT){
+                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.BLUE);
+                                                            }
+                                                            if (center == tileArray[ia][ja][ka][la][ma].getCoverBox()){
+                                                                centeri = ia;
+                                                                centerj = ja;
+                                                                centerk = ka;
+                                                                centerl = la;
+                                                                centerm = ma;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        for (int o = -1; o <= 1; o++) {
+                                            for (int p = -1; p <= 1; p++) {
+                                                for (int q = -1; q <= 1; q++) {
+                                                    for (int r = -1; r <= 1; r++) {
+                                                        for (int s = -1; s <= 1; s++) {
+                                                            // Skip the current tile
+                                                            if (o == 0 && p == 0 && q == 0 && r == 0 && s == 0) {
+                                                                continue;
+                                                            }
+                                                            if (centeri < 0 || centeri >= boardSize || centerj < 0 || centerj >= boardSize || centerk < 0 || centerk >= boardSize ||
+                                                            centerl < 0 || centerl >= boardSize || centerm < 0 || centerm >= boardSize) {
+                                                                continue;
+                                                            }
+                                                            int ni = centeri + o;
+                                                            int nj = centerj + p;
+                                                            int nk = centerk + q;
+                                                            int nl = centerl + r;
+                                                            int nm = centerm + s;
+                                                            
+                                                            // Check if the neighboring tile is within bounds and not yet revealed
+                                                            if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && 
+                                                                nk >= 0 && nk < boardSize && nl >= 0 && nl < boardSize && 
+                                                                nm >= 0 && nm < boardSize && 
+                                                                tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY) {
+                                                                    tileArray[ni][nj][nk][nl][nm].getCoverBox().setFill(Color.BLUE);
+                                                                
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     } else {
@@ -527,19 +598,19 @@ public class App extends Application {
         if (allNonBombsRevealed || (allBombsFlagged && flaggedBombs == bombCount && allNonBombsRevealed)) {
             // Show win message
             Stage winStage = new Stage();
-            winStage.initStyle(StageStyle.UNDECORATED);
+            
             
             VBox winRoot = new VBox(10);
             winRoot.setAlignment(Pos.CENTER);
             
             Label winMessage = new Label("Congratulations! You Win!");
             winMessage.setStyle("-fx-font-size: 20px;");
-            
+            gameStage.close();
             Button closeButton = new Button("Return to Menu");
             closeButton.setOnAction(e -> {
                 winStage.close();
                 flagged = 0;
-                gameStage.close();
+                
                 primaryStage.show();
             });
             
