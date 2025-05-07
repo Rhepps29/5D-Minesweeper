@@ -416,7 +416,7 @@ public class App extends Application {
                                 
                                 tileArray[i][j][k][l][m].getCoverBox().setOnMouseClicked(f->{
                                     if (f.getButton() == MouseButton.PRIMARY){
-                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY){
+                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY || ((Rectangle)f.getSource()).getFill() == Color.LIGHTBLUE){
                                             ((Rectangle)f.getSource()).setFill(Color.TRANSPARENT);
                                             
                                             // Clear HashSet for new flood fill operation
@@ -480,10 +480,13 @@ public class App extends Application {
                                                 for (int ka = 0; ka<boardSize; ka++){
                                                     for (int la = 0; la<boardSize; la++){
                                                         for (int ma = 0; ma<boardSize; ma++){
-                                                            if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT){
-                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.BLUE);
+                                                            if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT && tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.ORANGE){
+                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.GRAY);
                                                             }
                                                             if (center == tileArray[ia][ja][ka][la][ma].getCoverBox()){
+                                                                if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT){
+                                                                    tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.LIGHTBLUE);
+                                                                }
                                                                 centeri = ia;
                                                                 centerj = ja;
                                                                 centerk = ka;
@@ -500,26 +503,21 @@ public class App extends Application {
                                                 for (int q = -1; q <= 1; q++) {
                                                     for (int r = -1; r <= 1; r++) {
                                                         for (int s = -1; s <= 1; s++) {
-                                                            // Skip the current tile
-                                                            if (o == 0 && p == 0 && q == 0 && r == 0 && s == 0) {
-                                                                continue;
-                                                            }
-                                                            if (centeri < 0 || centeri >= boardSize || centerj < 0 || centerj >= boardSize || centerk < 0 || centerk >= boardSize ||
-                                                            centerl < 0 || centerl >= boardSize || centerm < 0 || centerm >= boardSize) {
-                                                                continue;
-                                                            }
                                                             int ni = centeri + o;
                                                             int nj = centerj + p;
                                                             int nk = centerk + q;
                                                             int nl = centerl + r;
                                                             int nm = centerm + s;
-                                                            
+                                                            if (ni < 0 || ni >= boardSize || nj < 0 || nj >= boardSize || nk < 0 || nk >= boardSize ||
+                                                            nl < 0 || nl >= boardSize || nm < 0 || nm >= boardSize) {
+                                                                continue;
+                                                            }
                                                             // Check if the neighboring tile is within bounds and not yet revealed
                                                             if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && 
                                                                 nk >= 0 && nk < boardSize && nl >= 0 && nl < boardSize && 
                                                                 nm >= 0 && nm < boardSize && 
                                                                 tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY) {
-                                                                    tileArray[ni][nj][nk][nl][nm].getCoverBox().setFill(Color.BLUE);
+                                                                    tileArray[ni][nj][nk][nl][nm].getCoverBox().setFill(Color.LIGHTBLUE);
                                                                 
                                                             }
                                                         }
@@ -528,7 +526,7 @@ public class App extends Application {
                                             }
                                         }
                                     } else {
-                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY){
+                                        if (((Rectangle)f.getSource()).getFill() == Color.GRAY || ((Rectangle)f.getSource()).getFill() == Color.LIGHTBLUE){
                                             ((Rectangle)f.getSource()).setFill(Color.ORANGE);
                                             flagged++;
                                             for (int in = 0; in<boardSize; in++)
@@ -572,7 +570,7 @@ public class App extends Application {
                         for (int m = 0; m < boardSize; m++) {
                             Rectangle coverBox = tileArray[i][j][k][l][m].getCoverBox();
                             boolean isBomb = tileArray[i][j][k][l][m].getBombs() == -1;
-                            boolean isCovered = coverBox.getFill() == Color.GRAY;
+                            boolean isCovered = coverBox.getFill() == Color.GRAY || coverBox.getFill() == Color.LIGHTBLUE;
                             boolean isFlagged = coverBox.getFill() == Color.ORANGE;
                             
                             // If a non-bomb tile is still covered, player hasn't won yet
@@ -676,7 +674,7 @@ public class App extends Application {
                             if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && 
                                 nk >= 0 && nk < boardSize && nl >= 0 && nl < boardSize && 
                                 nm >= 0 && nm < boardSize && 
-                                tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY) {
+                                (tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY || tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.LIGHTBLUE)) {
                                 
                                 floodFill(tileArray, ni, nj, nk, nl, nm, boardSize, cleared);
                             }
