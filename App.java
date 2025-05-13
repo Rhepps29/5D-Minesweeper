@@ -3,6 +3,7 @@ import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.effect.BlurType;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
@@ -64,7 +65,7 @@ public class App extends Application {
 //SETTINGS
         ///Back Button
         BorderPane settingsRoot = new BorderPane();
-        gameSettings.setScene(new Scene(settingsRoot, 350, 135));
+        gameSettings.setScene(new Scene(settingsRoot, 385, 135));
         HBox settingsTop = new HBox();
         Label back = new Label("<-");
         back.setOnMouseClicked(e->{
@@ -114,7 +115,7 @@ public class App extends Application {
             
             difSetBox.setValue("Custom");
         });
-        Label startButton = new Label("                                                  Start");
+        Label startButton = new Label("Start");
         startButton.setTextAlignment(TextAlignment.RIGHT);
 //RULES
         TextArea rulesTA = new TextArea();
@@ -131,7 +132,7 @@ public class App extends Application {
         settingsCenter.add(new Label("Bomb Count:" ),0,2);
         settingsCenter.add(BSTF, 1,1);
         settingsCenter.add(BCTF,1,2);
-        settingsCenter.add(startButton, 1,3);
+        settingsCenter.add(startButton, 2,3);
         settingsRoot.setCenter(settingsCenter);    
         startButton.setOnMouseClicked(e->{
             int hi = Integer.parseInt(BSTF.getText());
@@ -415,6 +416,23 @@ public class App extends Application {
                                 final int fm = m;
                                 
                                 tileArray[i][j][k][l][m].getCoverBox().setOnMouseClicked(f->{
+                                    for (int ia = 0; ia<boardSize; ia++){
+                                        for (int ja = 0; ja<boardSize; ja++){
+                                            for (int ka = 0; ka<boardSize; ka++){
+                                                for (int la = 0; la<boardSize; la++){
+                                                    for (int ma = 0; ma<boardSize; ma++){
+                                                        if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT){
+                                                            if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() == Color.LIGHTBLUE || tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() == Color.GRAY){
+                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.GRAY);
+                                                            }else {//"0xffa500ff"
+                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.ORANGE);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                     if (f.getButton() == MouseButton.PRIMARY){
                                         if (((Rectangle)f.getSource()).getFill() == Color.GRAY || ((Rectangle)f.getSource()).getFill() == Color.LIGHTBLUE){
                                             ((Rectangle)f.getSource()).setFill(Color.TRANSPARENT);
@@ -480,12 +498,13 @@ public class App extends Application {
                                                 for (int ka = 0; ka<boardSize; ka++){
                                                     for (int la = 0; la<boardSize; la++){
                                                         for (int ma = 0; ma<boardSize; ma++){
-                                                            if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT && tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.ORANGE){
-                                                                tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.GRAY);
-                                                            }
                                                             if (center == tileArray[ia][ja][ka][la][ma].getCoverBox()){
                                                                 if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() != Color.TRANSPARENT){
-                                                                    tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.LIGHTBLUE);
+                                                                    if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() == Color.GRAY){
+                                                                        tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.LIGHTBLUE);
+                                                                    }else if (tileArray[ia][ja][ka][la][ma].getCoverBox().getFill() == Color.ORANGE){
+                                                                        tileArray[ia][ja][ka][la][ma].getCoverBox().setFill(Color.rgb(202,196,129));
+                                                                    }
                                                                 }
                                                                 centeri = ia;
                                                                 centerj = ja;
@@ -518,6 +537,13 @@ public class App extends Application {
                                                                 nm >= 0 && nm < boardSize && 
                                                                 tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.GRAY) {
                                                                     tileArray[ni][nj][nk][nl][nm].getCoverBox().setFill(Color.LIGHTBLUE);
+                                                                
+                                                            }
+                                                            if (ni >= 0 && ni < boardSize && nj >= 0 && nj < boardSize && 
+                                                                nk >= 0 && nk < boardSize && nl >= 0 && nl < boardSize && 
+                                                                nm >= 0 && nm < boardSize && 
+                                                                tileArray[ni][nj][nk][nl][nm].getCoverBox().getFill() == Color.ORANGE) {
+                                                                    tileArray[ni][nj][nk][nl][nm].getCoverBox().setFill(Color.rgb(202,196,129));
                                                                 
                                                             }
                                                         }
@@ -571,7 +597,7 @@ public class App extends Application {
                             Rectangle coverBox = tileArray[i][j][k][l][m].getCoverBox();
                             boolean isBomb = tileArray[i][j][k][l][m].getBombs() == -1;
                             boolean isCovered = coverBox.getFill() == Color.GRAY || coverBox.getFill() == Color.LIGHTBLUE;
-                            boolean isFlagged = coverBox.getFill() == Color.ORANGE;
+                            boolean isFlagged = coverBox.getFill() == Color.ORANGE || coverBox.getFill() == Color.rgb(202,196,129);
                             
                             // If a non-bomb tile is still covered, player hasn't won yet
                             if (!isBomb && isCovered) {
